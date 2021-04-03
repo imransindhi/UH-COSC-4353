@@ -73,4 +73,37 @@ class InputValidator
           }
             return $result;
       }
+
+      public function login_credentials_checker($username, $password)
+      {
+        return "dgd";
+      }
+
+      public function getUserAddress($user_id_input) 
+      {
+        $db = new SQLite3('my_database.db');
+        $SQLStatement = "SELECT ADDRESS_1 FROM ClientInformation WHERE USER_ID = $user_id_input";
+        $result = $db->query($SQLStatement);
+        $row = $result->fetchArray();
+        $db->close();
+        return $row[0];
+      }
+
+      public function validateLoginWithEncrptedPassword($username, $password)
+      {
+        $db = new SQLite3('my_database.db');
+        $SQLStatement = "SELECT * FROM UserCredentials";
+        $result = $db->query($SQLStatement);
+
+        while($row = $result->fetchArray())
+        {
+          if ($username == $row[1] && password_verify($password, $row[2]))
+          {
+            $db->close();
+            return "true";
+          }
+        }
+        $db->close();
+        return "false";
+      }
 }
