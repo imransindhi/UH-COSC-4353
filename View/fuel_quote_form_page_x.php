@@ -1,3 +1,7 @@
+<?php
+require "InputValidator.php";
+?>
+
 <html>
 <head>
     <style>
@@ -134,7 +138,11 @@ fieldset {
 
 <?php
 // define variables and set to empty values
+session_start();
 $gallons = $gallonsErr = $address1 = $address1Err = $address2Err = $address2 = $city = $cityErr = $genderErr = $websiteErr = $state = $stateErr = $zipcode = $zipcodeErr = "";
+$inputvalidator =  new InputValidator;
+
+$user_id = $_SESSION['user_id'];
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
   if (empty($_POST["gallons"])) {
@@ -166,10 +174,11 @@ function test_input($data) {
           <h3>Fuel Quote Form</h3>
           <h4>Enter fuel requirement</h4>
             <input name = "gallons" placeholder="Gallons Requested" type="text" pattern = "[0-9]*" tabindex="1" autofocus>
-		  <span class="error">* <?php echo "this ia pidnbpiasbnep";?></span>
+		  <span class="error">* <?php echo "This is required";?></span>
 		  <br><br>
           <fieldset>
-			<b><p style="color:#000; font-size:120%;">The address will come from the client profile after the DB connection is established.</p></b>
+		  <h4>Delivery Address</h4>
+			<b><p style="color:#000; font-size:120%;"><?php echo $inputvalidator->getUserAddress($user_id); ?></p></b>
           </fieldset>
           <fieldset>
 			  <h4>Delivery Date</h4>
