@@ -133,6 +133,7 @@ fieldset {
 <body>  
 
 <?php
+session_start();
 // define variables and set to empty values
 $name = $nameErr = $address1 = $address1Err = $address2Err = $address2 = $city = $cityErr = $genderErr = $websiteErr = $state = $stateErr = $zipcode = $zipcodeErr = "";
 $inputvalidator =  new InputValidator;
@@ -184,6 +185,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
 }
 
+if (isset($_POST['submit'])) {
+	$db = new SQLite3('my_database.db');
+	$SQLStatement = "INSERT INTO ClientInformation (FULL_NAME, ADDRESS_1, ADDRESS_2, CITY, STATES, ZIPCODE) VALUES ('$_POST[name]', '$_POST[address1]', '$_POST[address2]', '$_POST[city]', '$_POST[states]', '$_POST[zipcode]')";
+	$SQLStatement2 = "INSERT INTO UserCredentials (USERNAME, PASSWORDS) VALUES ('$_SESSION[username]', '$_SESSION[password]')";
+	$result = $db->query($SQLStatement);
+	$result2 = $db->query($SQLStatement2);
+	$db->close();
+	header("Location: /fuel_quote_form_page_x.php");
+    exit;
+  }
+
 ?>
 <div class="container">
 <h2>Profile Page</h2>
@@ -211,7 +223,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <br><br>
   <fieldset>
   <p>Select State</p>
-			<select type="text" id="state">
+			<select type="text" name = "states">
 				<option value="">- -</option>
 				<option value="AK">AK</option>
 				<option value="AL">AL</option>
