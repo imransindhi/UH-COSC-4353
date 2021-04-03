@@ -217,4 +217,95 @@ class InputValidatorTest extends TestCase
         // assert
         $this->assertEquals($excepted, $actual);
     }
+
+    public function test17()
+    {
+        // arrange
+        $target = new InputValidator();
+        $excepted = "473 Hedge Street";
+
+        // act
+        $actual = $target->getUserAddress("2");
+
+        // assert
+        $this->assertEquals($excepted, $actual);
+    }
+
+    public function test18()
+    {
+        // arrange
+        $target = new InputValidator();
+        $excepted = "University of Houston";
+
+        // act
+        $actual = $target->getUserAddress("1");
+
+        // assert
+        $this->assertEquals($excepted, $actual);
+    }
+
+    public function test19()
+    {
+        // arrange
+        $target = new InputValidator();
+        $excepted = "3605 Polk Street";
+
+        // act
+        $actual = $target->getUserAddress("3");
+
+        // assert
+        $this->assertEquals($excepted, $actual);
+    }
+
+    public function test20()
+    {
+        // arrange
+        $target = new InputValidator();
+        $excepted = "true";
+
+        // act
+        $actual = $target->validateLoginWithEncrptedPassword("asd", "asd");
+
+        // assert
+        $this->assertEquals($excepted, $actual);
+    }
+
+    public function test21()
+    {
+        // arrange
+        $target = new InputValidator();
+        $excepted = "true";
+
+        // act
+        $actual = $target->validateLoginWithEncrptedPassword("imran", "imran");
+
+        // assert
+        $this->assertEquals($excepted, $actual);
+    }
+
+    public function test22()
+    {
+        // arrange
+        $target = new InputValidator();
+        $excepted = "false";
+
+        // act
+        $actual = $target->validateLoginWithEncrptedPassword("imran", "sindhi");
+
+        // assert
+        $this->assertEquals($excepted, $actual);
+    }
+
+    public function test23()
+    {
+        // arrange
+        $target = new InputValidator();
+        $excepted = "false";
+
+        // act
+        $actual = $target->validateLoginWithEncrptedPassword("ASD", "ASD");
+
+        // assert
+        $this->assertEquals($excepted, $actual);
+    }
 }
