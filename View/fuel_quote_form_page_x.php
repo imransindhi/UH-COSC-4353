@@ -137,24 +137,129 @@ fieldset {
 
 
 <?php
+ini_set('display_errors',0); 
 // define variables and set to empty values
 session_start();
 $gallons = $gallonsErr = $address1 = $address1Err = $address2Err = $address2 = $city = $cityErr = $genderErr = $websiteErr = $state = $stateErr = $zipcode = $zipcodeErr = "";
 $inputvalidator =  new InputValidator;
+$total = 0;
+$suggestedprice = 0;
+$gallons = (int)$gallons;
 
 $user_id = $_SESSION['user_id'];
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  if (empty($_POST["gallons"])) {
-    $gallonsErr = "Number of gallons is required";
-  } else {
-    $gallons = test_input($_POST["gallons"]);
-	if (strlen($gallons) < 1)
-	{
-		$gallonsErr = "Please enter a valid amount!";
-	}
-  }
+// if ($_SERVER["REQUEST_METHOD"] == "POST") {
+//   if (empty($gallons)) {
+//     $gallonsErr = "Number of gallons is required";
+//   } else {
+//     $numberOfgallons = test_input($gallons);
+// 	if (strlen($numberOfgallons) < 1)
+// 	{
+// 		$gallonsErr = "Please enter a valid amount!";
+// 	}
+//   }
     
+// }
+
+if(isset($_POST['get_quote'])) {
+	$gallons = $_REQUEST['gallons'];
+    $date = $_REQUEST['date'];
+	$current_price = 1.50;
+	$state = $inputvalidator->getUserState($user_id);
+	$history = $inputvalidator->getUserHistory($user_id);
+	if ($state == "TX")
+	{
+		$location_factor = 0.02;
+	}
+	else
+	{
+		$location_factor = 0.04;
+	}
+
+	if ($history == "")
+	{
+		$ratehistoryfactor = 0.0;
+	}
+	else{
+		$ratehistoryfactor = 0.01;
+	}
+
+	if ($gallons == "")
+	{
+		$current_price = 0;
+	}
+	if ($gallons > 1000)
+	{
+		$Gallonsrequestedfactor = 0.02;
+	}
+	else{
+		$Gallonsrequestedfactor = 0.03;
+	}
+
+	$companyprofitfactor = 0.10;
+
+	$margin = ($location_factor - $ratehistoryfactor + $Gallonsrequestedfactor + $companyprofitfactor) * $current_price;
+
+	$suggestedprice = $current_price + $margin;
+	$total = $gallons * $suggestedprice;
+	$_SESSION['suggested_price'] = $suggestedprice;
+	$_SESSION['total_price'] = $total;
+	$_SESSION['user_address'] = $inputvalidator->getUserAddress($user_id);
+}
+
+if(isset($_POST['submit'])) {
+	$gallons = $_REQUEST['gallons'];
+	$date = $_REQUEST['date'];
+	$current_price = 1.50;
+	$state = $inputvalidator->getUserState($user_id);
+	$history = $inputvalidator->getUserHistory($user_id);
+	if ($state == "TX")
+	{
+		$location_factor = 0.02;
+	}
+	else
+	{
+		$location_factor = 0.04;
+	}
+
+	if ($history == "")
+	{
+		$ratehistoryfactor = 0.0;
+	}
+	else{
+		$ratehistoryfactor = 0.01;
+	}
+
+	if ($gallons == "")
+	{
+		$current_price = 0;
+	}
+	if ($gallons > 1000)
+	{
+		$Gallonsrequestedfactor = 0.02;
+	}
+	else{
+		$Gallonsrequestedfactor = 0.03;
+	}
+
+	$companyprofitfactor = 0.10;
+
+	$margin = ($location_factor - $ratehistoryfactor + $Gallonsrequestedfactor + $companyprofitfactor) * $current_price;
+	$suggestedprice = $current_price + $margin;
+	$total = $gallons * $suggestedprice;
+	$_SESSION['suggested_price'] = $suggestedprice;
+	$_SESSION['total_price'] = $total;
+	$_SESSION['user_address'] = $inputvalidator->getUserAddress($user_id);
+
+
+	$db = new SQLite3('my_database.db');
+	$SQLStatement = "INSERT INTO FuelQuote (USER_ID, GALLONS_REQUESTED, DELIVERY_DATE, TOTAL_PRICE) VALUES ('$_SESSION[user_id]','$gallons', '$date', '$_SESSION[total_price]')";
+	echo $SQLStatement;
+	$result = $db->query($SQLStatement);
+	$db->close();
+
+	header("Location: /fuel_quote_history_x.php");
+    exit;
 }
 
 function test_input($data) {
@@ -173,7 +278,7 @@ function test_input($data) {
         <form id="contact" action="" method="post">
           <h3>Fuel Quote Form</h3>
           <h4>Enter fuel requirement</h4>
-            <input name = "gallons" placeholder="Gallons Requested" type="text" pattern = "[0-9]*" tabindex="1" autofocus>
+            <input name = "gallons" id = "gallons" placeholder="Gallons Requested" type="text" pattern = "[0-9]*" tabindex="1" autofocus value = "<?php echo $gallons; ?>">
 		  <span class="error">* <?php echo "This is required";?></span>
 		  <br><br>
           <fieldset>
@@ -182,18 +287,22 @@ function test_input($data) {
           </fieldset>
           <fieldset>
 			  <h4>Delivery Date</h4>
-            <input placeholder="Date" type="date" tabindex="1" required>
+            <input name = "date" placeholder="Date" type="date" tabindex="1" required value = "<?php echo $date; ?>">
           </fieldset>
 
           <fieldset>
-			<b><p style="color:#000; font-size:150%;">Suggested Price / gallon is : $100.0</p></b>
+			<b><p style="color:#000; font-size:150%;"><?php echo "Suggested Price is : $ " . $suggestedprice; ?></p></b>
           </fieldset>
 
 		  <fieldset>
-			<b><p style="color:#000; font-size:150%;">Total Amount Due is : $500.0</p></b>
+			<b><p style="color:#000; font-size:150%;"><?php echo "Total Amount Due is : $ " . $total; ?></p></b>
+          </fieldset>
+		  <fieldset>
+            <button name="get_quote" type="submit" id="get_quote" data-submit="...Sending" formaction = "fuel_quote_form_page_x.php">Get Quote</button>
+
           </fieldset>
           <fieldset>
-            <button name="submit" type="submit" id="contact-submit" data-submit="...Sending" formaction = "fuel_quote_history_page.html">Submit</button>
+            <button name="submit" type="submit">Submit</button>
 
           </fieldset>
         </form>
