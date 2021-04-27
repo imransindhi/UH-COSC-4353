@@ -201,12 +201,26 @@ body {
 
 
 <?php
-
+ini_set('display_errors',0); 
 if (isset($_POST['login'])) {
     session_start();
+    $db = new SQLite3('my_database.db');
 $_SESSION['username'] = $_POST["username"];
 $hashPassword = password_hash($_POST["password"], PASSWORD_DEFAULT);
 $_SESSION['password'] = $hashPassword;
+
+
+$SQLStatement = "SELECT * FROM UserCredentials";
+$result = $db->query($SQLStatement);
+$counter = 0;
+while($row = $result->fetchArray())
+{
+  $counter++;
+}
+
+$_SESSION['user_id'] = $counter + 1;
+$db->close();
+
 header("Location: /profile_page_x.php");
 exit;
   }
